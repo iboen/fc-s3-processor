@@ -1,0 +1,46 @@
+service: s3-processor
+frameworkVersion: '3'
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: provided.al2
+  architecture: arm64
+  # region: us-east-1
+  environment:
+    RESIZE_WIDTH: ${env:RESIZE_WIDTH}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+          Resource:
+            - ${env:BUCKET_ARN}/*
+
+package:
+  individually: true
+
+functions:
+  resize-image:
+    handler: resize-image/main.go
+    events:
+      - s3:
+          bucket: isw-resizer
+          event: s3:ObjectCreated:*
+          # existing: true
+          rules:
+            - suffix: ${env:SUFFIX}
+            - prefix: ${env:PREFIX}
+
+plugins:
+  - serverless-go-plugin
+  # - serverless-dotenv-plugin
+
+custom:
+  go:
+    binDir: bin
+    supportedRuntimes: ["provided.al2"]
+    buildProvidedRuntimeAsBootstrap: true
