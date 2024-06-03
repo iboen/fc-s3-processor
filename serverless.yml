@@ -37,7 +37,6 @@ functions:
 
 plugins:
   - serverless-go-plugin
-  # - serverless-dotenv-plugin
 
 custom:
   go:
